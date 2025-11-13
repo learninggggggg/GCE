@@ -1,0 +1,6 @@
+Model Variant,Acc,FS,Macro-F1
+Full HMULSES-DST,0.4,0.5714,0.2045
+w/o Global Attention,0.4,0.5714,0.2045
+w/o Gated Fusion,0.4,0.5714,0.2045
+w/o Ordered Loss,0.4,0.5714,0.2045
+Word-level Only,0.47,0.6395,0.3573
