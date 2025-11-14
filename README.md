@@ -15,32 +15,11 @@
 - [Release](#release)
 - [Contents](#contents)
 - [Overview](#overview)
-- [Installation](#insta)
-
-Dataset
-
-Quick Start
-
-Training
-
-Inference
-
-Citation
-
-License
+- [Installation](#installation)
 
 ## Overview
 GEC is a novel framework for suicide risk detection that incorporates both global context modeling and emotion-consistent representation learning. This approach addresses the critical need for accurate and sensitive detection of suicide risk in online text content.
 
-Key Features:
-
-Global Context Modeling: Captures long-range dependencies and contextual information
-
-Emotion-Consistent Learning: Ensures emotional coherence across the text
-
-Multi-scale Analysis: Integrates both local and global semantic information
-
-Robust Performance: State-of-the-art results on suicide risk detection benchmarks
 
 ## Installation
 Clone this repository:
