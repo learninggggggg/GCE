@@ -66,121 +66,113 @@ Install PyTorch (choose the appropriate version for your CUDA setup):
 # For CUDA 11.3
 pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
 ```
-## Dataset
-Data Preparation
-Download the suicide risk detection dataset
+## Data Preparation
+Download the Reddit dataset and place it in the data/Reddit directory:
+```
+mkdir -p data/Reddit
+wget -O data/Reddit/reddit_clean.pkl https://example.com/reddit_clean.pkl
+```
+## Training and Evaluation
+Run Full Model (Baseline)
+```
+bash ablation_study.sh
+# The full model experiment is executed by default in the script
+```
+## Run Ablation Experiments
+The ablation_study.sh script includes all ablation experiments. You can run specific ones by modifying the script or executing individual commands:
+```
+# Run without Global Attention
+python 消融实验.py \
+--mode train_test \
+--use_gated_fusion \
+--use_ordered_loss \
+--loss_type ordered \
+--data_path data/Reddit/reddit_clean.pkl \
+--save_results \
+--results_path ablation_results/without_global_attention.csv
 
-Preprocess the data using our provided scripts:
+# Run without Gated Fusion
+python 消融实验.py \
+--mode train_test \
+--use_global_attention \
+--use_ordered_loss \
+--loss_type ordered \
+--data_path data/Reddit/reddit_clean.pkl \
+--save_results \
+--results_path ablation_results/without_gated_fusion.csv
+```
 
-bash
-python scripts/preprocess_data.py --input_path /path/to/raw_data --output_path data/processed/
-Data Format
-The processed data should be in the following format:
+## Cross-Validation
+The code uses 5-fold cross-validation by default. To adjust parameters like epochs or batch size, modify the arguments in the training command:
+```
+python 消融实验.py \
+--mode train_test \
+--use_global_attention \
+--use_gated_fusion \
+--use_ordered_loss \
+--loss_type ordered \
+--batch_size 32 \
+--epochs 50 \
+--lr 0.001 \
+--data_path data/Reddit/reddit_clean.pkl \
+--save_results \
+--results_path ablation_results/custom_params.csv
+```
+## Testing
+To test a trained model, use the --mode test flag and specify the model path:
+```
+python 消融实验.py \
+--mode test \
+--data_path data/Reddit/reddit_clean.pkl \
+--save_path models/best_model.pth \
+--results_path test_results.csv
+```
+## Check Results
+Ablation experiment results are saved in the ablation_results directory. You can view them using pandas:
+```
+import pandas as pd
 
-json
-{
-  "text": "sample text content",
-  "label": 0,
-  "emotion": "sadness",
-  "metadata": {...}
-}
-Quick Start
-Basic Usage
-Run the demo with pre-trained weights:
+# View full model results
+full_results = pd.read_csv("ablation_results/full_model.csv")
+print(full_results)
 
-bash
-python demo.py --model_path checkpoints/pretrained_gec --text "Your input text here"
-Training from Scratch
-bash
-python train.py --config configs/train_config.yaml --data_path data/processed/ --output_dir outputs/
-Evaluation
-bash
-python evaluate.py --model_path outputs/best_model/ --test_data data/processed/test.json
-Training
-Single GPU Training
-bash
-python train.py \
-    --model_name bert-base-uncased \
-    --train_file data/train.json \
-    --val_file data/val.json \
-    --output_dir models/gec_model \
-    --num_epochs 10 \
-    --batch_size 32 \
-    --learning_rate 2e-5 \
-    --max_length 256
-Multi-GPU Training
-bash
-torchrun --nproc_per_node=4 train.py \
-    --model_name bert-base-uncased \
-    --train_file data/train.json \
-    --val_file data/val.json \
-    --output_dir models/gec_model \
-    --num_epochs 10 \
-    --batch_size 8 \
-    --learning_rate 2e-5 \
-    --max_length 256
-Hyperparameter Tuning
-We provide a configuration file for easy hyperparameter tuning:
+# Compare all ablation results
+ablation_results = [
+    pd.read_csv("ablation_results/full_model.csv"),
+    pd.read_csv("ablation_results/without_global_attention.csv"),
+    pd.read_csv("ablation_results/without_gated_fusion.csv")
+]
+```
+[//]: # (Citation)
 
-bash
-python train.py --config configs/hyperparameter_tuning.yaml
-Inference
-Batch Inference
-bash
-python inference.py \
-    --model_path models/gec_model \
-    --input_file data/test.json \
-    --output_file results/predictions.json
-Real-time Inference
-python
-from gec_model import GECModel
+[//]: # (If you use GEC in your research, please cite our paper:)
 
-model = GECModel.from_pretrained('models/gec_model')
-result = model.predict("Sample text for suicide risk detection")
-print(f"Risk level: {result['risk_level']}, Confidence: {result['confidence']}")
-Web Demo
-Launch an interactive web interface:
+[//]: # ()
+[//]: # (bibtex)
 
-bash
-python app.py --model_path models/gec_model --port 7860
-Configuration
-Model Configuration
-Key parameters in configs/model_config.yaml:
+[//]: # (@article{ding2024gec,)
 
-yaml
-model:
-  name: "bert-base-uncased"
-  hidden_size: 768
-  num_labels: 3
-  dropout: 0.1
-  
-training:
-  batch_size: 32
-  learning_rate: 2e-5
-  warmup_steps: 1000
-  max_epochs: 10
-  
-data:
-  max_length: 256
-  train_ratio: 0.8
-  val_ratio: 0.1
-  test_ratio: 0.1
-Citation
-If you use GEC in your research, please cite our paper:
+[//]: # (  title={GEC: A Global and Emotion-Consistent Context Modeling Framework for Suicide Risk Detection},)
 
-bibtex
-@article{ding2024gec,
-  title={GEC: A Global and Emotion-Consistent Context Modeling Framework for Suicide Risk Detection},
-  author={Ding, Zhuping and Sheng, Yongpan and He, Lirong and Wang, Yiran and Liu, Ming},
-  journal={Proceedings of the Conference on Empirical Methods in Natural Language Processing},
-  year={2024}
-}
-License
-https://img.shields.io/badge/License-MIT-yellow.svg
+[//]: # (  author={Ding, Zhuping and Sheng, Yongpan and He, Lirong and Wang, Yiran and Liu, Ming},)
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+[//]: # (  journal={Proceedings of the Conference on Empirical Methods in Natural Language Processing},)
 
-Important Note: This software is intended for research purposes only. It should not be used as a substitute for professional mental health advice, diagnosis, or treatment. If you or someone you know is experiencing suicidal thoughts, please contact a mental health professional or emergency services immediately.
+[//]: # (  year={2024})
 
-Contact
-For questions about this codebase, please open an issue on GitHub or contact [Your Name] at [your.email@institution.edu].
+[//]: # (})
+
+[//]: # (License)
+
+[//]: # (https://img.shields.io/badge/License-MIT-yellow.svg)
+
+[//]: # ()
+[//]: # (This project is licensed under the MIT License - see the LICENSE file for details.)
+
+[//]: # ()
+[//]: # (Important Note: This software is intended for research purposes only. It should not be used as a substitute for professional mental health advice, diagnosis, or treatment. If you or someone you know is experiencing suicidal thoughts, please contact a mental health professional or emergency services immediately.)
+
+[//]: # ()
+[//]: # (Contact)
+
+[//]: # (For questions about this codebase, please open an issue on GitHub or contact [Your Name] at [your.email@institution.edu].)
